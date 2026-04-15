@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)",
+      "Bash(curl -s \"https://www.tithighadi.com/\")",
+      "Bash(curl -s \"https://www.tithighadi.com/assets/\")",
+      "WebFetch(domain:www.tithighadi.com)"
+    ]
+  }
+}

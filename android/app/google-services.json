@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "113951040604",
+    "project_id": "tithighadi-bb2c9",
+    "storage_bucket": "tithighadi-bb2c9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:113951040604:android:fa373ab17ec7543df97299",
+        "android_client_info": {
+          "package_name": "com.example.tithi_gadhi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDs9Phf7Z7xvwrpiTlcAiuUYWQcGfO58TI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
