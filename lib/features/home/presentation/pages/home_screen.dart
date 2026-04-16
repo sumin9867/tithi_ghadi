@@ -175,6 +175,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 SafeArea(
                   child: Column(
                     children: [
+
                       HomeHeader(
                         locName: _locName,
                         bsDateStr: bsDateStr,
@@ -186,6 +187,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         nsStr: nsStr,
                         vedicClockStr: _vedicClockStr,
                       ),
+                                  Text(bsDateStr,style: TextStyle(color: Colors.white),),
+                      Text(currentDay?.nakshatra.start??"",style: TextStyle(color: Colors.white),),
+
+                      Text(bsDateStr,style: TextStyle(color: Colors.white),),
+
+
                       Expanded(
                         child: currentDay != null
                             ? _buildDialArea(size, bsDateStr, currentDay)
@@ -242,6 +249,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     setH: sH,
                     vedicTime: _vt,
                     isLive: _selectedDate == null,
+                    animValue: _handCtrl.value,
                   ),
                 );
               },

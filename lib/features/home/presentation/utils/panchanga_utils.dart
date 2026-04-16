@@ -1,4 +1,7 @@
+import 'dart:developer';
 import 'dart:math' as math;
+import 'package:nepali_date_picker/nepali_date_picker.dart';
+
 import '../models/home_models.dart';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -32,9 +35,11 @@ double moonLon(double jd) {
 
 /// Calculate vedic (local solar) time in 0–24 decimal hours for a given location
 double vedicDecimal(DateTime date, double lonDeg) {
-  final utcH = date.toUtc().hour +
+  final utcH =
+      date.toUtc().hour +
       date.toUtc().minute / 60.0 +
-      date.toUtc().second / 3600.0;
+      date.toUtc().second / 3600.0 +
+      date.toUtc().millisecond / 3600000.0;
   final jd = jdn(date);
   final n = jd - 2451545;
   final lRad = mod360(280.46 + 0.985647 * n) * math.pi / 180;
@@ -90,12 +95,46 @@ double? calcRiseSet(
 // ══════════════════════════════════════════════════════════════════════════
 
 /// Parse ISO datetime string to 0–24 decimal hour in Nepal time (+5:45)
-double isoToDecimalHour(String? iso, {double fallback = 0.0}) {
-  if (iso == null || iso.isEmpty) return fallback;
+double isoToDecimalHour(
+  String? iso,
+  String type,
+ // pass today's Nepal date
+  {double fallback = 0.0}
+) {
+  if (iso == null || iso.isEmpty) {
+    log('⚠️ [isoToDecimalHour] iso is null or empty → returning fallback: $fallback');
+    return fallback;
+  }
+
   try {
-    final dt = DateTime.parse(iso).add(const Duration(hours: 11, minutes: 30));
-    return dt.hour + dt.minute / 60.0 + dt.second / 3600.0;
-  } catch (_) {
+    final dtParsed = DateTime.parse(iso);
+    log('📅 [isoToDecimalHour] Raw ISO input  : $iso');
+    log('📅 [isoToDecimalHour] Type           : $type');
+
+    final dt = dtParsed.add(Duration(hours: 11, minutes: 30)); // +05:45 Nepal
+    log('🇳🇵 [isoToDecimalHour] Nepal local    : $dt');
+final DateTime today=NepaliDateTime.now();
+    // Check if the date is before today
+    final isYesterday = dt.year == today.year &&
+        dt.month == today.month &&
+        dt.day < today.day;
+
+    log('📆 [isoToDecimalHour] Is yesterday?  : $isYesterday');
+    log('📆 [isoToDecimalHour] dt.day=${dt.day} today.day=${today.day}');
+
+    if (isYesterday) {
+      log('⏪ [isoToDecimalHour] Start is yesterday → clamping to 0.0 (00:00)');
+      return 0.0; // arc starts from midnight
+    }
+
+    final decimalHour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0;
+    log('✅ [isoToDecimalHour] Decimal hour result: $decimalHour');
+
+    return decimalHour;
+  } catch (e, stack) {
+    log('❌ [isoToDecimalHour] Failed to parse: "$iso"');
+    log('❌ [isoToDecimalHour] Error  : $e');
+    log('❌ [isoToDecimalHour] Stack  : $stack');
     return fallback;
   }
 }
@@ -153,6 +192,88 @@ String nepaliMonthName(int month) => _nepaliMonthNames[(month - 1) % 12];
   return (year: nd.year, month: nepaliMonthName(nd.month));
 }
 
+// ══════════════════════════════════════════════════════════════════════════
+// DATE CHECKS (for determining yesterday/tomorrow labels)
+// ══════════════════════════════════════════════════════════════════════════
+
+/// Returns true if the ISO datetime's calendar date is yesterday (Nepal time)
+bool isIsoDateYesterday(String? iso) {
+  if (iso == null || iso.isEmpty) return false;
+  try {
+    final dt = NepaliDateTime.parse(iso);
+    
+    final today = NepaliDateTime.now(); // already BS Nepal time
+    final yesterday = NepaliDateTime(today.year, today.month, today.day)
+        .subtract(const Duration(days: 1));
+    final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
+
+    log('🗓️ [isYesterday] dtDate   : $dtDate');
+    log('🗓️ [isYesterday] yesterday: $yesterday');
+
+    return dtDate == yesterday;
+  } catch (_) {
+    return false;
+  }
+}
+
+bool isIsoDateTomorrow(String? iso) {
+  if (iso == null || iso.isEmpty) return false;
+  try {
+    final dt = NepaliDateTime.parse(iso);
+
+    final today = NepaliDateTime.now();
+    final tomorrow = NepaliDateTime(today.year, today.month, today.day)
+        .add(const Duration(days: 1));
+    final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
+
+    log('🗓️ [isTomorrow] dtDate  : $dtDate');
+    log('🗓️ [isTomorrow] tomorrow: $tomorrow');
+
+    return dtDate == tomorrow;
+  } catch (_) {
+    return false;
+  }
+}
+bool isIsoDateYesterdayLabel(String? iso) {
+  if (iso == null || iso.isEmpty) return false;
+  try {
+    // Just grab "2083-01-02" from the ISO string directly
+    final isoDatePart = iso.substring(0, 10); // "2083-01-02"
+
+    final today = NepaliDateTime.now();
+    final yesterday = NepaliDateTime(today.year, today.month, today.day)
+        .subtract(const Duration(days: 1));
+    final yesterdayStr =
+        '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
+
+    log('🗓️ [isYesterday] isoDatePart : $isoDatePart');
+    log('🗓️ [isYesterday] yesterdayStr: $yesterdayStr');
+
+    return isoDatePart == yesterdayStr;
+  } catch (_) {
+    return false;
+  }
+}
+
+bool isIsoDateTomorrowLabel(String? iso) {
+  if (iso == null || iso.isEmpty) return false;
+  try {
+    final isoDatePart = iso.substring(0, 10); // "2083-01-04"
+
+    final today = NepaliDateTime.now();
+    final tomorrow = NepaliDateTime(today.year, today.month, today.day)
+        .add(const Duration(days: 1));
+    final tomorrowStr =
+        '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
+
+    log('🗓️ [isTomorrow] isoDatePart : $isoDatePart');
+    log('🗓️ [isTomorrow] tomorrowStr : $tomorrowStr');
+
+    return isoDatePart == tomorrowStr;
+  } catch (_) {
+    return false;
+  }
+}
 // ══════════════════════════════════════════════════════════════════════════
 // NUMBER FORMATTING
 // ══════════════════════════════════════════════════════════════════════════
