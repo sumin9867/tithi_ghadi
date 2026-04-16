@@ -20,7 +20,6 @@ class TithiGhadiCubit extends Cubit<TithiGhadiState> {
       (failure) => emit(const TithiGhadiState.error()),
       (response) {
         
-        log(" Loaded daily panchang: ${response} days");
         return emit(TithiGhadiState.loaded(response));},
     );
   }

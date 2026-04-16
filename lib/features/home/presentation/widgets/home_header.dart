@@ -19,7 +19,6 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(" Building HomeHeader with locName: $locName and bsDateStr: $bsDateStr");
     return Container(
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),

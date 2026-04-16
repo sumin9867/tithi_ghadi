@@ -10,21 +10,15 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('No user signed in')),
+      );
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
-      body: user == null
-          ? const Center(child: Text('No user signed in.'))
-          : _ProfileBody(user: user),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 1,
-        onTap: (index) {
-          if (index == 0) context.go('/home');
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.web), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
+      backgroundColor: const Color(0xFF070B14),
+      body: _ProfileBody(user: user),
     );
   }
 }
@@ -36,78 +30,201 @@ class _ProfileBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = user.displayName ?? '';
+    final name = user.displayName ?? '';
     final email = user.email ?? '';
-    final photoUrl = user.photoURL;
-    final initials = _initials(displayName, email);
+    final photo = user.photoURL;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        children: [
-          const SizedBox(height: 16),
-          // Avatar
-          CircleAvatar(
-            radius: 48,
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            backgroundImage:
-                photoUrl != null ? NetworkImage(photoUrl) : null,
-            child: photoUrl == null
-                ? Text(
-                    initials,
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  )
-                : null,
-          ),
-          const SizedBox(height: 24),
-          // Info card
-          Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Column(
-                children: [
-                  _InfoTile(
-                    icon: Icons.person_outline,
-                    label: 'Name',
-                    value: displayName.isNotEmpty ? displayName : '—',
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF070B14),
+            Color(0xFF0B1220),
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+
+              // 🔥 Glowing Avatar (like your dashboard center orb style)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      Colors.blue.withValues(alpha: 0.5),
+                      Colors.transparent,
+                    ],
                   ),
-                  const Divider(height: 1, indent: 56),
-                  _InfoTile(
-                    icon: Icons.email_outlined,
-                    label: 'Email',
-                    value: email.isNotEmpty ? email : '—',
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-          // Sign out
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: CircleAvatar(
+                  radius: 55,
+                  backgroundImage:
+                      photo != null ? NetworkImage(photo) : null,
+                  backgroundColor: const Color(0xFF1C2433),
+                  child: photo == null
+                      ? Text(
+                          _initials(name, email),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        )
+                      : null,
                 ),
               ),
-              onPressed: () async {
-                await AuthService.signOut();
-                if (context.mounted) context.go('/login');
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text('Sign Out', style: TextStyle(fontSize: 16)),
+
+              const SizedBox(height: 16),
+
+              Text(
+                name.isNotEmpty ? name : 'User',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+
+              const SizedBox(height: 4),
+
+              Text(
+                email,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // 📊 Info Cards (dashboard style)
+              _glassCard(
+                child: Column(
+                  children: [
+                    _tile(Icons.person_outline, "Name", name),
+                    const Divider(color: Colors.white12),
+                    _tile(Icons.email_outlined, "Email", email),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              _glassCard(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _statBox("Status", "Active"),
+                    _statBox("Plan", "Free"),
+                    _statBox("ID", user.uid.substring(0, 6)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // 🚪 Logout Button (styled like your app UI)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent.withValues(alpha: 0.9),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: () async {
+                    await AuthService.signOut();
+                    if (context.mounted) {
+                      context.go('/login');
+                    }
+                  },
+                  child: const Text(
+                    "Sign Out",
+                    style: TextStyle(fontSize: 16,color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _glassCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111A2E).withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withValues(alpha: 0.08),
+            blurRadius: 20,
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _tile(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blueAccent, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+          ),
+          Text(
+            value.isNotEmpty ? value : "—",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _statBox(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 
@@ -121,26 +238,5 @@ class _ProfileBody extends StatelessWidget {
     }
     if (email.isNotEmpty) return email[0].toUpperCase();
     return '?';
-  }
-}
-
-class _InfoTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _InfoTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      title: Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      subtitle: Text(value, style: const TextStyle(fontSize: 16)),
-    );
   }
 }

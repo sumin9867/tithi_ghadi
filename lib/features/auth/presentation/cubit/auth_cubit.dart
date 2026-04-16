@@ -10,12 +10,12 @@ import 'auth_state.dart';
 class AuthCubit extends Cubit<AuthState> {
   final LoginUseCase _loginUseCase;
   final GoogleLoginUseCase _googleLoginUseCase;
-  final FacebookLoginUseCase _facebookLoginUseCase;
+
 
   AuthCubit(
     this._loginUseCase,
     this._googleLoginUseCase,
-    this._facebookLoginUseCase,
+  
   ) : super(const AuthState.initial());
 
   Future<void> login(String email, String password) async {
@@ -32,11 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
     _handleResult(result);
   }
 
-  Future<void> loginWithFacebook() async {
-    emit(const AuthState.loading());
-    final result = await _facebookLoginUseCase(NoParams());
-    _handleResult(result);
-  }
+
 
   void _handleResult(dynamic result) {
     result.fold((failure) {

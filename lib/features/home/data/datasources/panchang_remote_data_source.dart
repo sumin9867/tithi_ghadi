@@ -16,7 +16,6 @@ class PanchangRemoteDataSourceImpl implements PanchangRemoteDataSource {
   @override
   Future<MonthEventsResponse> fetchDailyPanchang(DateTime date, String location) async {
     final formattedDate = _formatDate(date);
-    log('Fetching panchang for date: $formattedDate, location: $location');
     final response = await dioClient.dio.get(
       '$_apiPrefix/panchang-events/month-events',
       queryParameters: {
@@ -26,7 +25,6 @@ class PanchangRemoteDataSourceImpl implements PanchangRemoteDataSource {
       },
     );
     final monthResponse = MonthEventsResponse.fromJson(response.data as Map<String, dynamic>);
-    log(  "Fetched daily panchang: ${monthResponse} days");
     if (monthResponse.days.isEmpty) {
       throw Exception('No data available for the given date');
     }

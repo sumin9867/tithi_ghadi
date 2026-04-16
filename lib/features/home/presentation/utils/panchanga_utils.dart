@@ -102,33 +102,26 @@ double isoToDecimalHour(
   {double fallback = 0.0}
 ) {
   if (iso == null || iso.isEmpty) {
-    log('⚠️ [isoToDecimalHour] iso is null or empty → returning fallback: $fallback');
     return fallback;
   }
 
   try {
     final dtParsed = DateTime.parse(iso);
-    log('📅 [isoToDecimalHour] Raw ISO input  : $iso');
-    log('📅 [isoToDecimalHour] Type           : $type');
 
     final dt = dtParsed.add(Duration(hours: 11, minutes: 30)); // +05:45 Nepal
-    log('🇳🇵 [isoToDecimalHour] Nepal local    : $dt');
 final DateTime today=NepaliDateTime.now();
     // Check if the date is before today
     final isYesterday = dt.year == today.year &&
         dt.month == today.month &&
         dt.day < today.day;
 
-    log('📆 [isoToDecimalHour] Is yesterday?  : $isYesterday');
-    log('📆 [isoToDecimalHour] dt.day=${dt.day} today.day=${today.day}');
 
     if (isYesterday) {
-      log('⏪ [isoToDecimalHour] Start is yesterday → clamping to 0.0 (00:00)');
+
       return 0.0; // arc starts from midnight
     }
 
     final decimalHour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0;
-    log('✅ [isoToDecimalHour] Decimal hour result: $decimalHour');
 
     return decimalHour;
   } catch (e, stack) {
@@ -207,8 +200,7 @@ bool isIsoDateYesterday(String? iso) {
         .subtract(const Duration(days: 1));
     final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
 
-    log('🗓️ [isYesterday] dtDate   : $dtDate');
-    log('🗓️ [isYesterday] yesterday: $yesterday');
+
 
     return dtDate == yesterday;
   } catch (_) {
@@ -226,8 +218,6 @@ bool isIsoDateTomorrow(String? iso) {
         .add(const Duration(days: 1));
     final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
 
-    log('🗓️ [isTomorrow] dtDate  : $dtDate');
-    log('🗓️ [isTomorrow] tomorrow: $tomorrow');
 
     return dtDate == tomorrow;
   } catch (_) {
@@ -246,9 +236,6 @@ bool isIsoDateYesterdayLabel(String? iso) {
     final yesterdayStr =
         '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
 
-    log('🗓️ [isYesterday] isoDatePart : $isoDatePart');
-    log('🗓️ [isYesterday] yesterdayStr: $yesterdayStr');
-
     return isoDatePart == yesterdayStr;
   } catch (_) {
     return false;
@@ -266,8 +253,7 @@ bool isIsoDateTomorrowLabel(String? iso) {
     final tomorrowStr =
         '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
 
-    log('🗓️ [isTomorrow] isoDatePart : $isoDatePart');
-    log('🗓️ [isTomorrow] tomorrowStr : $tomorrowStr');
+
 
     return isoDatePart == tomorrowStr;
   } catch (_) {

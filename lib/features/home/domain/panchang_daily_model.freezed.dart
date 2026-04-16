@@ -21,10 +21,8 @@ PanchangDetail _$PanchangDetailFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PanchangDetail {
-  // Captures nameEn/nameNp from the API
   String? get nameEn => throw _privateConstructorUsedError;
-  String? get nameNp =>
-      throw _privateConstructorUsedError; // Captures typeEn/typeNp from the API
+  String? get nameNp => throw _privateConstructorUsedError;
   String? get typeEn => throw _privateConstructorUsedError;
   String? get typeNp => throw _privateConstructorUsedError;
   String? get start => throw _privateConstructorUsedError;
@@ -197,12 +195,10 @@ class _$PanchangDetailImpl implements _PanchangDetail {
   factory _$PanchangDetailImpl.fromJson(Map<String, dynamic> json) =>
       _$$PanchangDetailImplFromJson(json);
 
-  // Captures nameEn/nameNp from the API
   @override
   final String? nameEn;
   @override
   final String? nameNp;
-  // Captures typeEn/typeNp from the API
   @override
   final String? typeEn;
   @override
@@ -265,11 +261,10 @@ abstract class _PanchangDetail implements PanchangDetail {
   factory _PanchangDetail.fromJson(Map<String, dynamic> json) =
       _$PanchangDetailImpl.fromJson;
 
-  // Captures nameEn/nameNp from the API
   @override
   String? get nameEn;
   @override
-  String? get nameNp; // Captures typeEn/typeNp from the API
+  String? get nameNp;
   @override
   String? get typeEn;
   @override
@@ -463,8 +458,7 @@ PanchangDailyModel _$PanchangDailyModelFromJson(Map<String, dynamic> json) {
 mixin _$PanchangDailyModel {
   String get date => throw _privateConstructorUsedError;
   String get dateAd => throw _privateConstructorUsedError;
-  VaraDetail get vara =>
-      throw _privateConstructorUsedError; // Vara usually doesn't have start/end/type
+  VaraDetail get vara => throw _privateConstructorUsedError;
   PanchangDetail get tithi => throw _privateConstructorUsedError;
   PanchangDetail get nakshatra => throw _privateConstructorUsedError;
   PanchangDetail get yoga => throw _privateConstructorUsedError;
@@ -723,7 +717,6 @@ class _$PanchangDailyModelImpl implements _PanchangDailyModel {
   final String dateAd;
   @override
   final VaraDetail vara;
-  // Vara usually doesn't have start/end/type
   @override
   final PanchangDetail tithi;
   @override
@@ -802,7 +795,7 @@ abstract class _PanchangDailyModel implements PanchangDailyModel {
   @override
   String get dateAd;
   @override
-  VaraDetail get vara; // Vara usually doesn't have start/end/type
+  VaraDetail get vara;
   @override
   PanchangDetail get tithi;
   @override

@@ -2,9 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hive/hive.dart';
 import 'package:nepali_utils/nepali_utils.dart';
 import 'package:tithi_gadhi/core/network/dio_client.dart';
 import 'package:tithi_gadhi/features/home/data/datasources/panchang_remote_data_source.dart';
+import 'package:tithi_gadhi/features/home/data/datasources/panchang_local_data_source.dart';
 import 'package:tithi_gadhi/features/home/data/repositories/panchang_repository_impl.dart';
 import 'package:tithi_gadhi/features/home/domain/panchang_daily_model.dart';
 import 'package:tithi_gadhi/features/home/presentation/cubit/tithi_ghadi_cubit.dart';
@@ -20,13 +22,13 @@ import '../widgets/layer_tab_bar.dart';
 import '../widgets/location_modal.dart';
 import '../widgets/date_modal.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class TithiGhadiScreen extends StatefulWidget {
+  const TithiGhadiScreen({super.key});
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<TithiGhadiScreen> createState() => _TithiGhadiScreenState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProviderStateMixin {
   double _lat = 27.7172, _lon = 85.3240, _tz = 5.75;
   String _locName = 'काठमाडौं';
 
@@ -63,6 +65,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _cubit = TithiGhadiCubit(
       PanchangRepositoryImpl(
         PanchangRemoteDataSourceImpl(GetIt.I<DioClient>()),
+        PanchangLocalDataSourceImpl(Hive.box<String>('panchang_cache')),
       ),
     );
     _cubit.loadDailyPanchang(_effectiveDate, _apiLocationForName(_locName));
@@ -187,11 +190,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         nsStr: nsStr,
                         vedicClockStr: _vedicClockStr,
                       ),
-                                  Text(bsDateStr,style: TextStyle(color: Colors.white),),
-                      Text(currentDay?.nakshatra.start??"",style: TextStyle(color: Colors.white),),
-
-                      Text(bsDateStr,style: TextStyle(color: Colors.white),),
-
+                              
 
                       Expanded(
                         child: currentDay != null
@@ -215,11 +214,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildDialArea(Size size, String bsDateStr, PanchangDailyModel day) {
+ Widget _buildDialArea(Size size, String bsDateStr, PanchangDailyModel day) {
     final cfg = kLayerConfigs[_layer]!;
     final detail = _activeDetail(day);
     final dialSize = math
-        .min(size.width - 32, size.height - 200.0)
+        .min(size.width - 64, size.height - 180.0)  // changed 32 → 64
         .clamp(0.0, 520.0);
 
     return Center(

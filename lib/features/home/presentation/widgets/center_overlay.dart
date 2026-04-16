@@ -47,17 +47,14 @@ void _updateCountdown() {
   final endIso = widget.detail.end;
   if (endIso == null || endIso.isEmpty) return;
 
-  log('⏰ [1] raw endIso: $endIso');
 
   // Parse the BS ISO string directly as NepaliDateTime
   final endDt = NepaliDateTime.parse(endIso).add(Duration(hours: 5,minutes: 45));
   final nowNepali = NepaliDateTime.now();
 
-  log('⏰ [2] endDt (BS) : $endDt');
-  log('⏰ [3] nowNepali  : $nowNepali');
 
   final diffSeconds = endDt.difference(nowNepali).inSeconds;
-  log('⏰ [4] diffSeconds: $diffSeconds');
+
 
   if (diffSeconds <= 0) {
     if (mounted) setState(() => _countdown = '00:00:00');
@@ -68,7 +65,7 @@ void _updateCountdown() {
   final m = (diffSeconds % 3600) ~/ 60;
   final s = diffSeconds % 60;
 
-  log('⏰ [5] countdown: $h:$m:$s');
+
 
   if (mounted) {
     setState(() {
@@ -135,11 +132,7 @@ final endDisplay = endLabel.isNotEmpty
     : endTime;
 
 final timeRangeStr = '$startDisplay – $endDisplay';
-log('starting s $startLabel');
-log('starting e $endLabel');
 
-log('starting ds ${widget.detail.start}');
-log('starting de ${widget.detail.end}');
 
 
 

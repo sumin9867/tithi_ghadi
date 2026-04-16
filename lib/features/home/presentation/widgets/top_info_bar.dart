@@ -17,7 +17,6 @@ class TopInfoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(" Building TopInfoBar with varaStr: $varaStr, nsStr: $nsStr, vedicClockStr: $vedicClockStr");
     return Container(
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 16),

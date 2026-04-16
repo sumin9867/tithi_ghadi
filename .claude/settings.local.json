@@ -5,7 +5,9 @@
       "Bash(flutter analyze *)",
       "Bash(curl -s \"https://www.tithighadi.com/\")",
       "Bash(curl -s \"https://www.tithighadi.com/assets/\")",
-      "WebFetch(domain:www.tithighadi.com)"
+      "WebFetch(domain:www.tithighadi.com)",
+      "Bash(flutter clean *)",
+      "Bash(flutter run *)"
     ]
   }
 }

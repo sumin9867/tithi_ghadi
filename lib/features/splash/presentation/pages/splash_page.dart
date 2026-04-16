@@ -16,6 +16,9 @@ class SplashPage extends StatelessWidget {
         listener: (context, state) {
           state.when(
             initial: () {},
+            needsOnboarding: () {
+              context.go('/onBoarding');
+            },
             authenticated: () {
               context.go('/home'); // Home page will be implemented later
             },
