@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tithi_gadhi/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:tithi_gadhi/features/auth/presentation/cubit/auth_state.dart';
+import 'package:tithi_gadhi/core/services/tithi_foreground_service.dart';
 import '../../../../core/di/injection.dart';
 
 class LoginPage extends StatelessWidget {
@@ -32,7 +33,10 @@ class _LoginView extends StatelessWidget {
             state.when(
               initial: () {},
               loading: () {},
-              success: () => context.go('/home'),
+              success: () async {
+                await TithiForegroundService.startService();
+                if (context.mounted) context.go('/home');
+              },
               error: (message) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(message)),

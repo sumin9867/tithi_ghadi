@@ -1,5 +1,6 @@
 import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:tithi_gadhi/l10n/app_localizations.dart';
@@ -17,19 +18,36 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox<String>('panchang_cache');
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Initialize Firebase Cloud Messaging
   await FcmService().initialize();
 
   await configureDependencies();
-  runApp(DevicePreview(
-    builder: (context) {
-      return const MyApp();
-    }
-  ));
+
+  FlutterForegroundTask.init(
+    androidNotificationOptions: AndroidNotificationOptions(
+      channelId: 'tithi_channel',
+      channelName: 'Tithi Live',
+      channelDescription: 'Shows live tithi updates',
+      channelImportance: NotificationChannelImportance.LOW,
+      priority: NotificationPriority.LOW,
+    ),
+    foregroundTaskOptions: ForegroundTaskOptions(
+      autoRunOnBoot: true,
+      allowWakeLock: false,
+      allowWifiLock: false,
+      eventAction: ForegroundTaskEventAction.repeat(60000), // 60 seconds in milliseconds
+    ),
+    iosNotificationOptions: IOSNotificationOptions(),
+  );
+  runApp(
+    DevicePreview(
+      builder: (context) {
+        return const MyApp();
+      },
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

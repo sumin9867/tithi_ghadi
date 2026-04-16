@@ -43,38 +43,34 @@ class _CenterOverlayState extends State<CenterOverlay> {
     );
   }
 
-void _updateCountdown() {
-  final endIso = widget.detail.end;
-  if (endIso == null || endIso.isEmpty) return;
+  void _updateCountdown() {
+    final endIso = widget.detail.end;
+    if (endIso == null || endIso.isEmpty) return;
 
+    // Parse the BS ISO string directly as NepaliDateTime
+    final endDt = NepaliDateTime.parse(
+      endIso,
+    ).add(const Duration(hours: 5, minutes: 45));
+    final nowNepali = NepaliDateTime.now();
 
-  // Parse the BS ISO string directly as NepaliDateTime
-  final endDt = NepaliDateTime.parse(endIso).add(Duration(hours: 5,minutes: 45));
-  final nowNepali = NepaliDateTime.now();
+    final diffSeconds = endDt.difference(nowNepali).inSeconds;
 
+    if (diffSeconds <= 0) {
+      if (mounted) setState(() => _countdown = '00:00:00');
+      return;
+    }
 
-  final diffSeconds = endDt.difference(nowNepali).inSeconds;
+    final h = diffSeconds ~/ 3600;
+    final m = (diffSeconds % 3600) ~/ 60;
+    final s = diffSeconds % 60;
 
-
-  if (diffSeconds <= 0) {
-    if (mounted) setState(() => _countdown = '00:00:00');
-    return;
+    if (mounted) {
+      setState(() {
+        _countdown =
+            '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+      });
+    }
   }
-
-  final h = diffSeconds ~/ 3600;
-  final m = (diffSeconds % 3600) ~/ 60;
-  final s = diffSeconds % 60;
-
-
-
-  if (mounted) {
-    setState(() {
-      _countdown =
-          '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-    });
-  }
-}
-
 
   @override
   void didUpdateWidget(CenterOverlay old) {
@@ -88,55 +84,48 @@ void _updateCountdown() {
     super.dispose();
   }
 
-String _fmtIso(String? iso) {
-  if (iso == null || iso.isEmpty) return '--:--';
-  try {
-    final dt = DateTime.parse(iso).add(const Duration(hours: 11, minutes: 30));
-    final hh24 = dt.hour;
-    final hh12 = hh24 % 12 == 0 ? 12 : hh24 % 12;
-    final amPm = hh24 < 12 ? 'AM' : 'PM';
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '${hh12.toString().padLeft(2, '0')}:$mm $amPm';
-  } catch (_) {
-    return '--:--';
+  String _fmtIso(String? iso) {
+    if (iso == null || iso.isEmpty) return '--:--';
+    try {
+      final dt = DateTime.parse(
+        iso,
+      ).add(const Duration(hours: 11, minutes: 30));
+      final hh24 = dt.hour;
+      final hh12 = hh24 % 12 == 0 ? 12 : hh24 % 12;
+      final amPm = hh24 < 12 ? 'AM' : 'PM';
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '${hh12.toString().padLeft(2, '0')}:$mm $amPm';
+    } catch (_) {
+      return '--:--';
+    }
   }
-}
 
+  String _startLabel(String? iso) {
+    if (isIsoDateYesterday(iso)) return 'हिजो';
+    if (isIsoDateTomorrow(iso)) return 'भोलि';
+    return '';
+  }
 
-String _startLabel(String? iso) {
-  if (isIsoDateYesterday(iso)) return 'हिजो';
-  if (isIsoDateTomorrow(iso)) return 'भोलि';
-  return '';
-}
-
-String _endLabel(String? iso) {
-  if (isIsoDateTomorrow(iso)) return 'भोलि';
-  if (isIsoDateYesterday(iso)) return 'हिजो';
-  return '';
-}
+  String _endLabel(String? iso) {
+    if (isIsoDateTomorrow(iso)) return 'भोलि';
+    if (isIsoDateYesterday(iso)) return 'हिजो';
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Replace the startDisplay / endDisplay / timeRangeStr block with:
+    final startTime = _fmtIso(widget.detail.start);
+    final endTime = _fmtIso(widget.detail.end);
+    final startLabel = _startLabel(widget.detail.start);
+    final endLabel = _endLabel(widget.detail.end);
 
-// Replace the startDisplay / endDisplay / timeRangeStr block with:
-final startTime = _fmtIso(widget.detail.start);
-final endTime   = _fmtIso(widget.detail.end);
-final startLabel = _startLabel(widget.detail.start);
-final endLabel   = _endLabel(widget.detail.end);
+    final startDisplay = startLabel.isNotEmpty
+        ? '$startTime ($startLabel)'
+        : startTime;
+    final endDisplay = endLabel.isNotEmpty ? '$endTime ($endLabel)' : endTime;
 
-final startDisplay = startLabel.isNotEmpty
-    ? '$startTime ($startLabel)'
-    : startTime;
-final endDisplay = endLabel.isNotEmpty
-    ? '$endTime ($endLabel)'
-    : endTime;
-
-final timeRangeStr = '$startDisplay – $endDisplay';
-
-
-
-
-
+    final timeRangeStr = '$startDisplay – $endDisplay';
 
     return Container(
       width: widget.size,

@@ -1,3 +1,4 @@
+import 'dart:async' as async;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:nepali_utils/nepali_utils.dart';
 import 'package:tithi_gadhi/core/network/dio_client.dart';
+import 'package:tithi_gadhi/core/services/tithi_foreground_service.dart';
 import 'package:tithi_gadhi/features/home/data/datasources/panchang_remote_data_source.dart';
 import 'package:tithi_gadhi/features/home/data/datasources/panchang_local_data_source.dart';
 import 'package:tithi_gadhi/features/home/data/repositories/panchang_repository_impl.dart';
@@ -40,6 +42,7 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
   final List<Star> _stars = [];
 
   late final TithiGhadiCubit _cubit;
+  late async.StreamSubscription<TithiGhadiState> _tithiStreamSubscription;
   String _vedicClockStr = '';
 
   DateTime get _effectiveDate => _selectedDate ?? DateTime.now();
@@ -69,6 +72,38 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
       ),
     );
     _cubit.loadDailyPanchang(_effectiveDate, _apiLocationForName(_locName));
+
+    // Subscribe to cubit stream to send tithi data to foreground service
+    _tithiStreamSubscription = _cubit.stream.listen((state) {
+      state.whenOrNull(
+        loaded: (response) {
+          // Build today's date string in YYYY-MM-DD format for matching
+          final todayStr = [
+            _effectiveDate.year.toString().padLeft(4, '0'),
+            _effectiveDate.month.toString().padLeft(2, '0'),
+            _effectiveDate.day.toString().padLeft(2, '0'),
+          ].join('-');
+
+          // Find today's panchang data
+          PanchangDailyModel? today;
+          try {
+            today = response.days.firstWhere((d) => d.dateAd == todayStr);
+          } catch (_) {
+            today = response.days.isNotEmpty ? response.days.first : null;
+          }
+
+          // Send tithi data to foreground service for notification update
+          if (today?.tithi.end != null) {
+            final tithiName = today!.tithi.nameNp ?? today.tithi.nameEn ?? 'तिथि';
+            TithiForegroundService.sendTithiData(
+              tithiName: tithiName,
+              tithiEnd: today.tithi.end!,
+            );
+          }
+        },
+      );
+    });
+
     _tick();
   }
 
@@ -102,6 +137,7 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
 
   @override
   void dispose() {
+    _tithiStreamSubscription.cancel();
     _starCtrl.dispose();
     _handCtrl.dispose();
     _cubit.close();

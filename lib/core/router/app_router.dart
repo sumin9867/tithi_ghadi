@@ -37,7 +37,7 @@ class AppRouter {
   AppRouter(this.secureStorage);
 
   late final GoRouter config = GoRouter(
-    initialLocation: AppRoute.splash,
+        initialLocation: AppRoute.splash, 
 
     /// ✅ Cleaner redirect logic
     // redirect: (context, state) async {

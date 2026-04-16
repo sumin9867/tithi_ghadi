@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tithi_gadhi/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:tithi_gadhi/features/splash/presentation/cubit/splash_state.dart';
+import 'package:tithi_gadhi/core/services/tithi_foreground_service.dart';
 import '../../../../core/di/injection.dart';
 
 class SplashPage extends StatelessWidget {
@@ -19,8 +20,9 @@ class SplashPage extends StatelessWidget {
             needsOnboarding: () {
               context.go('/onBoarding');
             },
-            authenticated: () {
-              context.go('/home'); // Home page will be implemented later
+            authenticated: () async {
+              await TithiForegroundService.startService();
+              if (context.mounted) context.go('/home');
             },
             unauthenticated: () {
               context.go('/login');

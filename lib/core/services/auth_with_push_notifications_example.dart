@@ -1,6 +1,8 @@
 // This is an example of how to integrate push notifications with your auth flow
 // Copy the relevant parts into your actual auth service/cubit
 
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:tithi_gadhi/core/network/dio_client.dart';
@@ -99,13 +101,9 @@ class AuthServiceWithPushNotifications {
       if (user != null) {
         // 1. Get current ID token
         final idToken = await user.getIdToken();
-
+log("I am idToken $idToken");
         // 2. Unregister device from backend
-        if (idToken != null && idToken.isNotEmpty) {
-          await _pushNotificationService.unregisterDeviceFromBackend(
-            idToken: idToken,
-          );
-        }
+        
 
         // 3. Unsubscribe from notifications
         await _pushNotificationService.unsubscribeFromUserNotifications(

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:injectable/injectable.dart';
 import 'package:tithi_gadhi/core/network/dio_client.dart';
@@ -23,6 +25,7 @@ class PushNotificationService {
         if (deviceName != null) 'deviceName': deviceName,
         'deviceId': _getDeviceId(),
       };
+      log("I am payload $payload");
 
       // Send registration to your backend endpoint
       // Adjust the endpoint path based on your API structure
@@ -54,21 +57,7 @@ class PushNotificationService {
     }
   }
 
-  /// Cleanup when user logs out
-  Future<void> unregisterDeviceFromBackend({
-    required String idToken,
-  }) async {
-    try {
-      await _dioClient.dio.post(
-        '/auth/unregister-device', // Update this endpoint
-        data: {
-          'idToken': idToken,
-        },
-      );
-    } catch (e) {
-      // Silent fail
-    }
-  }
+
 
   /// Get unique device identifier
   String _getDeviceId() {
