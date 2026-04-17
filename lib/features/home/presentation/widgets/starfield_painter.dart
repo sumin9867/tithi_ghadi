@@ -11,7 +11,8 @@ class StarfieldPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(s.x * size.width, s.y * size.height),
         s.r,
-        Paint()..color = const Color(0xFFb4d2f0).withOpacity(s.alpha * 0.5),
+        Paint()
+          ..color = const Color(0xFFb4d2f0).withValues(alpha: s.alpha * 0.5),
       );
     }
   }

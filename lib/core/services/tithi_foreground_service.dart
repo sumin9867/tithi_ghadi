@@ -1,4 +1,5 @@
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:tithi_gadhi/core/services/permission_service.dart';
 import 'tithi_task_handler.dart';
 
 /// Static service manager for the tithi foreground service.
@@ -6,16 +7,9 @@ import 'tithi_task_handler.dart';
 class TithiForegroundService {
   /// Requests notification and battery optimization permissions before starting service.
   static Future<void> _requestPermissions() async {
-    // Request notification permission
-    final notificationPerm = await FlutterForegroundTask.checkNotificationPermission();
-    if (notificationPerm != NotificationPermission.granted) {
-      await FlutterForegroundTask.requestNotificationPermission();
-    }
-
-    // Request battery optimization exemption (optional but recommended for persistent service)
-    if (!await FlutterForegroundTask.isIgnoringBatteryOptimizations) {
-      await FlutterForegroundTask.requestIgnoreBatteryOptimization();
-    }
+    // Consolidated permission requests via centralized service
+    await PermissionService.requestNotificationPermission();
+    await PermissionService.requestIgnoreBatteryOptimizations();
   }
 
   /// Starts the foreground service with initial notification.

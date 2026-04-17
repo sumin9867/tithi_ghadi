@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../models/home_models.dart';
@@ -23,7 +22,12 @@ class HomeHeader extends StatelessWidget {
       height: 44,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: kGold.withOpacity(0.2), width: 0.5)),
+        border: Border(
+          bottom: BorderSide(
+            color: kGold.withValues(alpha: 0.2),
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         children: [
@@ -36,7 +40,11 @@ class HomeHeader extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   locName.substring(0, math.min(locName.length, 12)),
-                  style: const TextStyle(color: kGold, fontSize: 13, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: kGold,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -45,7 +53,11 @@ class HomeHeader extends StatelessWidget {
           const Text(
             'तिथी घडी',
             style: TextStyle(
-                color: kText, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 0.5),
+              color: kText,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
           ),
           const Spacer(),
           GestureDetector(
@@ -57,7 +69,11 @@ class HomeHeader extends StatelessWidget {
                 const SizedBox(width: 4),
                 Text(
                   bsDateStr,
-                  style: const TextStyle(color: kCyan, fontSize: 11, fontFamily: 'monospace'),
+                  style: const TextStyle(
+                    color: kCyan,
+                    fontSize: 11,
+                    fontFamily: 'monospace',
+                  ),
                 ),
               ],
             ),

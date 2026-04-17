@@ -39,7 +39,7 @@ void main() async {
       allowWifiLock: false,
       eventAction: ForegroundTaskEventAction.repeat(60000), // 60 seconds in milliseconds
     ),
-    iosNotificationOptions: IOSNotificationOptions(),
+    iosNotificationOptions: const IOSNotificationOptions(),
   );
   runApp(
     DevicePreview(

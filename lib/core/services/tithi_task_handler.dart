@@ -57,7 +57,7 @@ class TithiTaskHandler extends TaskHandler {
         } else {
           final h = diff.inHours;
           final m = diff.inMinutes % 60;
-          subtitle = h > 0 ? '${h}घ $mम बाँकी' : '$mम बाँकी';
+          subtitle = h > 0 ? '$hघ $mम बाँकी' : '$mम बाँकी';
         }
       } catch (_) {
         // If parsing fails, show tithi name only

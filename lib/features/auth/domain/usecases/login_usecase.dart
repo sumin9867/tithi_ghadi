@@ -13,7 +13,7 @@ class LoginUseCase implements UseCase<User, LoginParams> {
 
   @override
   Future<Either<Failure, User>> call(LoginParams params) async {
-    return await repository.login(params.email, params.password);
+    return await repository.loginWithGoogle();
   }
 }
 

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:tithi_gadhi/features/auth/presentation/cubit/auth_cubit.dart';
-import 'package:tithi_gadhi/features/auth/presentation/cubit/auth_state.dart';
+import 'package:tithi_gadhi/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:tithi_gadhi/core/services/tithi_foreground_service.dart';
 import '../../../../core/di/injection.dart';
 
@@ -13,7 +12,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
+      create: (_) => getIt<AuthBloc>(),
       child: const _LoginView(),
     );
   }
@@ -26,14 +25,11 @@ class _LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A2E),
-
       body: SafeArea(
-        child: BlocConsumer<AuthCubit, AuthState>(
+        child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-            state.when(
-              initial: () {},
-              loading: () {},
-              success: () async {
+            state.whenOrNull(
+              authenticated: (user) async {
                 await TithiForegroundService.startService();
                 if (context.mounted) context.go('/home');
               },
@@ -52,7 +48,6 @@ class _LoginView extends StatelessWidget {
 
             return Stack(
               children: [
-                // ── MAIN CONTENT ─────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),
                   child: Column(
@@ -68,7 +63,6 @@ class _LoginView extends StatelessWidget {
                                 height: 64,
                               ),
                               const SizedBox(height: 16),
-
                               const Text(
                                 'Tithi Ghadi',
                                 textAlign: TextAlign.center,
@@ -78,9 +72,7 @@ class _LoginView extends StatelessWidget {
                                   color: Colors.white,
                                 ),
                               ),
-
                               const SizedBox(height: 6),
-
                               const Text(
                                 '"Follow the right clock."',
                                 textAlign: TextAlign.center,
@@ -90,18 +82,14 @@ class _LoginView extends StatelessWidget {
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
-
                               const SizedBox(height: 32),
-
                               SizedBox(
                                 height: 220,
                                 child: SvgPicture.asset(
                                   "assets/onboarding/on_3.svg",
                                 ),
                               ),
-
                               const SizedBox(height: 24),
-
                               const Text(
                                 'Real time Tithi with less hassle in your own hand.',
                                 textAlign: TextAlign.center,
@@ -118,11 +106,9 @@ class _LoginView extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // ── LOADING OVERLAY ─────────────────────
                 if (isLoading)
                   Container(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),
@@ -132,11 +118,9 @@ class _LoginView extends StatelessWidget {
           },
         ),
       ),
-
-      // ── BOTTOM SHEET ─────────────────────
       bottomSheet: SafeArea(
         top: false,
-        child: BlocBuilder<AuthCubit, AuthState>(
+        child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             final isLoading = state.maybeWhen(
               loading: () => true,
@@ -158,17 +142,15 @@ class _LoginView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Drag handle
                   Container(
                     width: 60,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Color(0xFF818181),
+                      color: const Color(0xFF818181),
                       borderRadius: BorderRadius.circular(7),
                     ),
                   ),
                   const SizedBox(height: 20),
-
                   const Text(
                     'Sign In to your account',
                     style: TextStyle(
@@ -177,14 +159,13 @@ class _LoginView extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Google Button
                   GestureDetector(
                     onTap: isLoading
                         ? null
-                        : () => context.read<AuthCubit>().loginWithGoogle(),
+                        : () => context
+                            .read<AuthBloc>()
+                            .add(const AuthEvent.googleLoginRequested()),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(

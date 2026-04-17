@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 // ══ COLORS ══
 
-const kBg0 = Color(0xFF03071e);
+const kBg0 = Color(0xFF0D1E35);
 const kBg1 = Color(0xFF0d1e38);
-const kCyan = Color(0xFF7ecef4);
-const kGold = Color(0xFFc9963a);
+const kCyan = Color(0xFF6AB4DC);
+const kGold = Color(0xFFC9A84C);
 const kGoldLt = Color(0xFFf0c060);
 const kRed = Color(0xFFef4444);
-const kText = Color(0xFFf0e8d8);
-const kSlate = Color(0xFF8ba3bf);
+const kText = Color(0xFFE2D9C8);
+const kSlate = Color(0xFF8899AA);
 
 // ══ LAYER CONFIGS ══
 

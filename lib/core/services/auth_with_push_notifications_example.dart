@@ -45,9 +45,9 @@ class AuthServiceWithPushNotifications {
       }
 
       return user;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (_) {
       rethrow;
-    } catch (e) {
+    } catch (_) {
       rethrow;
     }
   }
@@ -66,7 +66,7 @@ class AuthServiceWithPushNotifications {
       }
 
       return user;
-    } catch (e) {
+    } catch (_) {
       rethrow;
     }
   }
@@ -88,7 +88,7 @@ class AuthServiceWithPushNotifications {
       }
 
       await _pushNotificationService.subscribeToUserNotifications(userId);
-    } catch (e) {
+    } catch (_) {
       // Don't rethrow - notification setup failure shouldn't block login
     }
   }
@@ -116,7 +116,7 @@ log("I am idToken $idToken");
 
       // 5. Sign out from Firebase
       await _firebaseAuth.signOut();
-    } catch (e) {
+    } catch (_) {
       rethrow;
     }
   }

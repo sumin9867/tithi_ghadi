@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:tithi_gadhi/core/services/permission_service.dart';
 
 class FcmService {
   static final FcmService _instance = FcmService._internal();
@@ -23,16 +24,8 @@ class FcmService {
       // Initialize local notifications
       await _initializeLocalNotifications();
 
-      // Request user permission for iOS
-      await _firebaseMessaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
+      // Request user permission for location and notifications centralized
+      await PermissionService.requestNotificationPermission();
 
       // Get FCM token
       _fcmToken = await _firebaseMessaging.getToken();

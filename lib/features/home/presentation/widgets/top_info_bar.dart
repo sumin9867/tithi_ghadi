@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import '../models/home_models.dart';
 
@@ -21,16 +19,26 @@ class TopInfoBar extends StatelessWidget {
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: kBg1.withOpacity(0.6),
-        border: Border(bottom: BorderSide(color: kGold.withOpacity(0.12), width: 0.5)),
+        color: kBg1.withValues(alpha: 0.6),
+        border: Border(
+          bottom: BorderSide(
+            color: kGold.withValues(alpha: 0.12),
+            width: 0.5,
+          ),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(varaStr, style: const TextStyle(color: kSlate, fontSize: 12)),
-          Text(nsStr, style: const TextStyle(color: kGold, fontSize: 12)),
-          Text(vedicClockStr,
-              style: const TextStyle(color: kCyan, fontSize: 13, fontFamily: 'monospace')),
+          Text(
+            vedicClockStr,
+            style: const TextStyle(
+              color: kCyan,
+              fontSize: 13,
+              fontFamily: 'monospace',
+            ),
+          ),
         ],
       ),
     );

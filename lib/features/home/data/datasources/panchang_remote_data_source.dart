@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import '../../../../core/network/dio_client.dart';
 import '../../domain/panchang_daily_model.dart';

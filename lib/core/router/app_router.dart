@@ -9,7 +9,6 @@ import '../../features/home/presentation/pages/home_shell.dart';
 import '../../features/home/presentation/pages/tithi_ghadi_screen.dart';
 import '../../features/home/presentation/pages/calendar_screen.dart';
 import '../../features/home/presentation/pages/alerts_screen.dart';
-import '../../features/home/presentation/pages/settings_screen.dart';
 import '../../features/profile/presentation/pages/profile_screen.dart';
 
 /// ✅ Centralized route definitions

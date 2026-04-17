@@ -1,34 +1,32 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tithi_gadhi/core/services/secure_storage_service.dart';
 import 'splash_state.dart';
 
 @injectable
 class SplashCubit extends Cubit<SplashState> {
-  final FlutterSecureStorage _secureStorage;
+  final SecureStorageService _storage;
   final SharedPreferences _prefs;
 
-  SplashCubit(this._secureStorage, this._prefs) : super(const SplashState.initial());
+  SplashCubit(this._storage, this._prefs) : super(const SplashState.initial());
 
-  Future<void> checkToken() async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate splash duration
-    try {
-      // Check if onboarding has been completed
-      final isOnboardingDone = _prefs.getBool('isOnboardingDone') ?? false;
-      if (!isOnboardingDone) {
-        emit(const SplashState.needsOnboarding());
-        return;
-      }
+  Future<void> checkInitialStatus() async {
+    // 1. Minimum splash delay for branding
+    await Future.delayed(const Duration(seconds: 2));
 
-      // Onboarding done, check auth status
-      final token = await _secureStorage.read(key: 'auth_token');
-      if (token != null && token.isNotEmpty) {
-        emit(const SplashState.authenticated());
-      } else {
-        emit(const SplashState.unauthenticated());
-      }
-    } catch (_) {
+    // 2. Check Onboarding
+    final isOnboardingDone = _prefs.getBool('isOnboardingDone') ?? false;
+    if (!isOnboardingDone) {
+      emit(const SplashState.needsOnboarding());
+      return;
+    }
+
+    // 3. Check for existing session (refreshToken)
+    final refreshToken = await _storage.getRefreshToken();
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      emit(const SplashState.authenticated());
+    } else {
       emit(const SplashState.unauthenticated());
     }
   }

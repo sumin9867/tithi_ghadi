@@ -26,6 +26,8 @@ class PushNotificationService {
         'deviceId': _getDeviceId(),
       };
       log("I am payload $payload");
+      log("I am payload $payload");
+
 
       // Send registration to your backend endpoint
       // Adjust the endpoint path based on your API structure

@@ -1,27 +1,13 @@
-class User {
-  final String id;
-  final String email;
-  final String name;
-  final String token;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const User({
-    required this.id,
-    required this.email,
-    required this.name,
-    required this.token,
-  });
+part 'user.freezed.dart';
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is User &&
-          runtimeType == other.runtimeType &&
-          id == other.id &&
-          email == other.email &&
-          name == other.name &&
-          token == other.token;
-
-  @override
-  int get hashCode =>
-      id.hashCode ^ email.hashCode ^ name.hashCode ^ token.hashCode;
+@freezed
+class User with _$User {
+  const factory User({
+    required int id,
+    required String email,
+    required String name,
+    required String? pictureUrl,
+  }) = _User;
 }

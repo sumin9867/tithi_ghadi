@@ -1,7 +1,5 @@
-import 'dart:developer';
 import 'dart:math' as math;
-import 'package:nepali_date_picker/nepali_date_picker.dart';
-
+import 'package:nepali_utils/nepali_utils.dart';
 import '../models/home_models.dart';
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -77,7 +75,7 @@ double? calcRiseSet(
   final g = mod360(357.528 + 0.9856 * n) * math.pi / 180;
   final lam =
       (L + 1.915 * math.sin(g) + 0.02 * math.sin(2 * g)) * math.pi / 180;
-  final eps = 23.439 * math.pi / 180;
+  const eps = 23.439 * math.pi / 180;
   final dec = math.asin(math.sin(eps) * math.sin(lam));
   final cosH =
       (math.sin(-0.833 * math.pi / 180) -
@@ -95,39 +93,28 @@ double? calcRiseSet(
 // ══════════════════════════════════════════════════════════════════════════
 
 /// Parse ISO datetime string to 0–24 decimal hour in Nepal time (+5:45)
-double isoToDecimalHour(
-  String? iso,
-  String type,
- // pass today's Nepal date
-  {double fallback = 0.0}
-) {
+double isoToDecimalHour(String? iso, String type, {double fallback = 0.0}) {
   if (iso == null || iso.isEmpty) {
     return fallback;
   }
 
   try {
     final dtParsed = DateTime.parse(iso);
+    final dt = dtParsed.add(
+      const Duration(hours: 11, minutes: 30),
+    ); // +05:45 Nepal
+    final today = NepaliDateTime.now();
 
-    final dt = dtParsed.add(Duration(hours: 11, minutes: 30)); // +05:45 Nepal
-final DateTime today=NepaliDateTime.now();
     // Check if the date is before today
-    final isYesterday = dt.year == today.year &&
-        dt.month == today.month &&
-        dt.day < today.day;
-
+    final isYesterday =
+        dt.year == today.year && dt.month == today.month && dt.day < today.day;
 
     if (isYesterday) {
-
       return 0.0; // arc starts from midnight
     }
 
-    final decimalHour = dt.hour + dt.minute / 60.0 + dt.second / 3600.0;
-
-    return decimalHour;
-  } catch (e, stack) {
-    log('❌ [isoToDecimalHour] Failed to parse: "$iso"');
-    log('❌ [isoToDecimalHour] Error  : $e');
-    log('❌ [isoToDecimalHour] Stack  : $stack');
+    return dt.hour + dt.minute / 60.0 + dt.second / 3600.0;
+  } catch (e) {
     return fallback;
   }
 }
@@ -152,31 +139,9 @@ const _nepaliMonthNames = [
 String nepaliMonthName(int month) => _nepaliMonthNames[(month - 1) % 12];
 
 /// Convert AD date to Nepali (BS) date
-/// Uses offset: BS = AD + 56 years and ~8.5 months
 ({int year, int month, int day}) adToNepaliDate(DateTime adDate) {
-  // Standard offset: Nepali calendar is ~56.7 years ahead
-  // This is an approximation; precise conversion requires lookup tables
-  int bsYear = adDate.year + 56;
-  int bsMonth = adDate.month + 8;
-  int bsDay = adDate.day + 15; // Approximate
-
-  // Adjust for month overflow
-  if (bsMonth > 12) {
-    bsYear += (bsMonth - 1) ~/ 12;
-    bsMonth = ((bsMonth - 1) % 12) + 1;
-  }
-
-  // Adjust for day overflow (approximate)
-  if (bsDay > 32) {
-    bsMonth++;
-    bsDay -= 32;
-    if (bsMonth > 12) {
-      bsYear++;
-      bsMonth = 1;
-    }
-  }
-
-  return (year: bsYear, month: bsMonth, day: bsDay);
+  final bs = adDate.toNepaliDateTime();
+  return (year: bs.year, month: bs.month, day: bs.day);
 }
 
 /// Get Nepali year and month name from AD date
@@ -194,14 +159,13 @@ bool isIsoDateYesterday(String? iso) {
   if (iso == null || iso.isEmpty) return false;
   try {
     final dt = NepaliDateTime.parse(iso);
-    
-    final today = NepaliDateTime.now(); // already BS Nepal time
-    final yesterday = NepaliDateTime(today.year, today.month, today.day)
-        .subtract(const Duration(days: 1));
+    final today = NepaliDateTime.now();
+    final yesterday = NepaliDateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: 1));
     final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
-
-
-
     return dtDate == yesterday;
   } catch (_) {
     return false;
@@ -212,30 +176,31 @@ bool isIsoDateTomorrow(String? iso) {
   if (iso == null || iso.isEmpty) return false;
   try {
     final dt = NepaliDateTime.parse(iso);
-
     final today = NepaliDateTime.now();
-    final tomorrow = NepaliDateTime(today.year, today.month, today.day)
-        .add(const Duration(days: 1));
+    final tomorrow = NepaliDateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).add(const Duration(days: 1));
     final dtDate = NepaliDateTime(dt.year, dt.month, dt.day);
-
-
     return dtDate == tomorrow;
   } catch (_) {
     return false;
   }
 }
+
 bool isIsoDateYesterdayLabel(String? iso) {
   if (iso == null || iso.isEmpty) return false;
   try {
-    // Just grab "2083-01-02" from the ISO string directly
-    final isoDatePart = iso.substring(0, 10); // "2083-01-02"
-
+    final isoDatePart = iso.substring(0, 10);
     final today = NepaliDateTime.now();
-    final yesterday = NepaliDateTime(today.year, today.month, today.day)
-        .subtract(const Duration(days: 1));
+    final yesterday = NepaliDateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).subtract(const Duration(days: 1));
     final yesterdayStr =
         '${yesterday.year}-${yesterday.month.toString().padLeft(2, '0')}-${yesterday.day.toString().padLeft(2, '0')}';
-
     return isoDatePart == yesterdayStr;
   } catch (_) {
     return false;
@@ -245,21 +210,21 @@ bool isIsoDateYesterdayLabel(String? iso) {
 bool isIsoDateTomorrowLabel(String? iso) {
   if (iso == null || iso.isEmpty) return false;
   try {
-    final isoDatePart = iso.substring(0, 10); // "2083-01-04"
-
+    final isoDatePart = iso.substring(0, 10);
     final today = NepaliDateTime.now();
-    final tomorrow = NepaliDateTime(today.year, today.month, today.day)
-        .add(const Duration(days: 1));
+    final tomorrow = NepaliDateTime(
+      today.year,
+      today.month,
+      today.day,
+    ).add(const Duration(days: 1));
     final tomorrowStr =
         '${tomorrow.year}-${tomorrow.month.toString().padLeft(2, '0')}-${tomorrow.day.toString().padLeft(2, '0')}';
-
-
-
     return isoDatePart == tomorrowStr;
   } catch (_) {
     return false;
   }
 }
+
 // ══════════════════════════════════════════════════════════════════════════
 // NUMBER FORMATTING
 // ══════════════════════════════════════════════════════════════════════════

@@ -6,6 +6,8 @@ import 'package:get_it/get_it.dart';
 import 'package:hive/hive.dart';
 import 'package:nepali_utils/nepali_utils.dart';
 import 'package:tithi_gadhi/core/network/dio_client.dart';
+import 'package:tithi_gadhi/core/services/location_service.dart';
+import 'package:tithi_gadhi/core/services/permission_service.dart';
 import 'package:tithi_gadhi/core/services/tithi_foreground_service.dart';
 import 'package:tithi_gadhi/features/home/data/datasources/panchang_remote_data_source.dart';
 import 'package:tithi_gadhi/features/home/data/datasources/panchang_local_data_source.dart';
@@ -30,7 +32,8 @@ class TithiGhadiScreen extends StatefulWidget {
   State<TithiGhadiScreen> createState() => _TithiGhadiScreenState();
 }
 
-class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProviderStateMixin {
+class _TithiGhadiScreenState extends State<TithiGhadiScreen>
+    with TickerProviderStateMixin {
   double _lat = 27.7172, _lon = 85.3240, _tz = 5.75;
   String _locName = 'काठमाडौं';
 
@@ -72,6 +75,7 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
       ),
     );
     _cubit.loadDailyPanchang(_effectiveDate, _apiLocationForName(_locName));
+    _requestStartupPermissions();
 
     // Subscribe to cubit stream to send tithi data to foreground service
     _tithiStreamSubscription = _cubit.stream.listen((state) {
@@ -94,7 +98,8 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
 
           // Send tithi data to foreground service for notification update
           if (today?.tithi.end != null) {
-            final tithiName = today!.tithi.nameNp ?? today.tithi.nameEn ?? 'तिथि';
+            final tithiName =
+                today!.tithi.nameNp ?? today.tithi.nameEn ?? 'तिथि';
             TithiForegroundService.sendTithiData(
               tithiName: tithiName,
               tithiEnd: today.tithi.end!,
@@ -105,6 +110,29 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
     });
 
     _tick();
+  }
+
+  Future<void> _requestStartupPermissions() async {
+    await PermissionService.requestAllNecessaryPermissions();
+    _initializeLocation();
+  }
+
+  Future<void> _initializeLocation() async {
+    final location = await LocationService.getCurrentLocation();
+    if (location != null && mounted) {
+      setState(() {
+        _lat = location.latitude;
+        _lon = location.longitude;
+        _tz = (_lon / 15 * 2).round() / 2;
+        if (location.name != null) {
+          _locName = location.name!;
+        } else {
+          _locName = 'Current Location';
+        }
+      });
+      _cubit.loadDailyPanchang(_effectiveDate, _apiLocationForName(_locName));
+      _tick(); // Update vedic time with new longitude
+    }
   }
 
   void _initStars() {
@@ -196,7 +224,7 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
                 ).add(const Duration(hours: 11, minutes: 30))
               : _effectiveDate;
 
-          final bs = NepaliDateTime.fromDateTime(adDate);
+          final bs = adDate.toNepaliDateTime();
 
           final month = kMonthsNS[bs.month - 1];
           final vara = currentDay?.vara.nameNp ?? '';
@@ -214,7 +242,6 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
                 SafeArea(
                   child: Column(
                     children: [
-
                       HomeHeader(
                         locName: _locName,
                         bsDateStr: bsDateStr,
@@ -226,7 +253,6 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
                         nsStr: nsStr,
                         vedicClockStr: _vedicClockStr,
                       ),
-                              
 
                       Expanded(
                         child: currentDay != null
@@ -250,11 +276,11 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
     );
   }
 
- Widget _buildDialArea(Size size, String bsDateStr, PanchangDailyModel day) {
+  Widget _buildDialArea(Size size, String bsDateStr, PanchangDailyModel day) {
     final cfg = kLayerConfigs[_layer]!;
     final detail = _activeDetail(day);
     final dialSize = math
-        .min(size.width - 64, size.height - 180.0)  // changed 32 → 64
+        .min(size.width - 64, size.height - 180.0) // changed 32 → 64
         .clamp(0.0, 520.0);
 
     return Center(
@@ -373,54 +399,70 @@ class _TithiGhadiScreenState extends State<TithiGhadiScreen> with TickerProvider
 
   void _showLocModal() {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
-      backgroundColor: kBg1,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => LocationModal(
-        lat: _lat,
-        lon: _lon,
-        name: _locName,
-        onApply: (lat, lon, name) {
-          setState(() {
-            _lat = lat;
-            _lon = lon;
-            _tz = (lon / 15 * 2).round() / 2;
-            _locName = name;
-          });
-          _cubit.loadDailyPanchang(
-            _effectiveDate,
-            _apiLocationForName(_locName),
-          );
-        },
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.60,
+        minChildSize: 0.5,
+        maxChildSize: 0.7,
+        snap: true,
+        snapSizes: const [0.5, 0.60, 0.7],
+        expand: false,
+        builder: (ctx, scrollController) => LocationModal(
+          // ← capture scrollController
+          lat: _lat,
+          lon: _lon,
+          name: _locName,
+          onApply: (lat, lon, name) {
+            setState(() {
+              _lat = lat;
+              _lon = lon;
+              _tz = (lon / 15 * 2).round() / 2;
+              _locName = name;
+            });
+            _cubit.loadDailyPanchang(
+              _effectiveDate,
+              _apiLocationForName(_locName),
+            );
+          },
+        ),
       ),
     );
   }
 
   void _showDateModal() {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
-      backgroundColor: kBg1,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => DateModal(
-        selected: _selectedDate,
-        onApply: (d) {
-          setState(() => _selectedDate = d);
-          _cubit.loadDailyPanchang(
-            _effectiveDate,
-            _apiLocationForName(_locName),
-          );
-        },
-        onReset: () {
-          setState(() => _selectedDate = null);
-          _cubit.loadDailyPanchang(
-            _effectiveDate,
-            _apiLocationForName(_locName),
-          );
-        },
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true, // ← required for draggable
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.75, // opens at 75% screen height
+        minChildSize: 0.5, // can drag down to 50%
+        maxChildSize: 1.0, // can drag up to full screen
+        snap: true,
+        snapSizes: const [0.5, 0.75, 1.0],
+        expand: false,
+        builder: (ctx, scrollController) => DateModal(
+          selected: _selectedDate,
+          // ← pass it down
+          onApply: (d) {
+            setState(() => _selectedDate = d);
+            _cubit.loadDailyPanchang(
+              _effectiveDate,
+              _apiLocationForName(_locName),
+            );
+          },
+          onReset: () {
+            setState(() => _selectedDate = null);
+            _cubit.loadDailyPanchang(
+              _effectiveDate,
+              _apiLocationForName(_locName),
+            );
+          },
+        ),
       ),
     );
   }
